@@ -1,7 +1,8 @@
-import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Length, IS_EMAIL, IsEmail, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class RegisterDto {
+
+export class RegisterDto  {
   @IsNotEmpty()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
@@ -9,12 +10,19 @@ export class RegisterDto {
   fullname: string;
 
   @IsNotEmpty()
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toLowerCase().trim() : value,
+  )
   @IsEmail()
   email: string;
 
   @IsNotEmpty()
   @IsString()
+  @Length(8, 100)
+  @Matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
+    message:
+      'Password must contain at least one letter, one number, and one special character.',
+  })
   password: string;
 }

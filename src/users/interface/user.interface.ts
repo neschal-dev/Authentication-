@@ -11,3 +11,7 @@ export interface SafeUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UserWithPassword extends SafeUser {
+  password: string;
+}
