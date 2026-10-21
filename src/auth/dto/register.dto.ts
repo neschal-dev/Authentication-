@@ -1,8 +1,14 @@
-import { IsNotEmpty, IsString, Length, IS_EMAIL, IsEmail, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  Length,
+  IS_EMAIL,
+  IsEmail,
+  Matches,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
-
-export class RegisterDto  {
+export class RegisterDto {
   @IsNotEmpty()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
