@@ -10,7 +10,7 @@ import {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(input: CreateUserInput): Promise<SafeUser | null> {
+  async create(input: CreateUserInput): Promise<SafeUser> {
     const { id, email, fullname, createdAt, updatedAt } =
       await this.prisma.orm.User.create({
         fullname: input.fullname,

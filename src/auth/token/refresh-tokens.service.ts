@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { createHash } from 'crypto';
-import { SaveRefreshTokenInput } from './interface/token.interface';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service.js';
+import { SaveRefreshTokenInput } from './interface/token.interface.js';
 
 @Injectable()
 export class RefreshTokenService {
