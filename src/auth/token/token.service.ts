@@ -2,7 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { SignedRefreshToken } from './interface/token.interface';
+import {
+  AccessTokenPayload,
+  SignedRefreshToken,
+} from './interface/token.interface.js';
 
 @Injectable()
 export class TokenService {
@@ -23,6 +26,12 @@ export class TokenService {
     this.refreshTtlSeconds = Number(
       config.getOrThrow<string>('JWT_REFRESH_TTL_SECONDS'),
     );
+  }
+  async verifyAccessToken(token: string): Promise<AccessTokenPayload> {
+    return await this.jwt.verifyAsync<AccessTokenPayload>(token, {
+      secret: this.accessSecret,
+      algorithms: ['HS256'],
+    });
   }
 
   signAccessToken(userId: string): Promise<string> {

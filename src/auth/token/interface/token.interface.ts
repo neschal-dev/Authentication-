@@ -10,3 +10,9 @@ export interface SaveRefreshTokenInput {
   token: string;
   expiresAt: Date;
 }
+
+export interface AccessTokenPayload {
+  sub: string;
+  iat: number;
+  exp: number;
+}

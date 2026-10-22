@@ -78,7 +78,6 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    // TODO: issue tokens
     const { id, fullname, email, createdAt, updatedAt } = user;
     return await this.issueTokens({
       id,
@@ -87,5 +86,13 @@ export class AuthService {
       createdAt,
       updatedAt,
     });
+  }
+
+  async getProfile(userId: string): Promise<SafeUser> {
+    const user = await this.userService.findUserById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User no longer exits');
+    }
+    return user;
   }
 }

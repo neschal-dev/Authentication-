@@ -1,4 +1,4 @@
-import { SafeUser } from "../../users/interface/user.interface";
+import { SafeUser } from '../../users/interface/user.interface';
 
 export interface AuthResult {
   user: SafeUser;
