@@ -42,4 +42,12 @@ export class RefreshTokenService {
       .where((t) => t.revokedAt.isNull())
       .updateAndCount({ revokedAt: new Date().toISOString() });
   }
+
+  // Housekeeping: a token past its expiry already fails JWT verification, so its row
+// is dead weight. Revoked rows that have NOT expired stay, they power reuse detection.
+async deleteExpired(): Promise<number> {
+  return this.prisma.orm.RefreshToken.where((t) =>
+    t.expiresAt.lt(new Date().toISOString()),
+  ).deleteAndCount();
+}
 }
