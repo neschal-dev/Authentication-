@@ -16,3 +16,10 @@ export interface AccessTokenPayload {
   iat: number;
   exp: number;
 }
+
+export interface RefreshTokenPayload {
+  sub: string;
+  jti: string; // = RefreshToken row id
+  iat: number;
+  exp: number;
+}

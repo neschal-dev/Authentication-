@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Task } from './entities/task.entity.js';
 
 
 @Injectable()

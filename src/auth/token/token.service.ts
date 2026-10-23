@@ -2,8 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+
 import {
   AccessTokenPayload,
+  RefreshTokenPayload,
   SignedRefreshToken,
 } from './interface/token.interface.js';
 
@@ -27,9 +29,18 @@ export class TokenService {
       config.getOrThrow<string>('JWT_REFRESH_TTL_SECONDS'),
     );
   }
+  
   async verifyAccessToken(token: string): Promise<AccessTokenPayload> {
     return await this.jwt.verifyAsync<AccessTokenPayload>(token, {
       secret: this.accessSecret,
+      algorithms: ['HS256'],
+    });
+  }
+
+  // Uses the refresh secret only, so an access token is rejected here.
+  async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
+    return await this.jwt.verifyAsync<RefreshTokenPayload>(token, {
+      secret: this.refreshSecret,
       algorithms: ['HS256'],
     });
   }

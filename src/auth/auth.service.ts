@@ -3,14 +3,18 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto.js';
+
 import { UsersService } from '../users/users.service.js';
 import { HashingService } from './hashing/hashing.service.js';
-import { LoginDto } from './dto/login.dto.js';
-import { SafeUser } from '../users/interface/user.interface.js';
-import { AuthResult } from './interface/auth-result.interface.js';
 import { TokenService } from './token/token.service.js';
 import { RefreshTokenService } from './token/refresh-tokens.service.js';
+
+import { SafeUser } from '../users/interface/user.interface.js';
+import { AuthResult } from './interface/auth-result.interface.js';
+
+import { RegisterDto } from './dto/register.dto.js';
+import { LoginDto } from './dto/login.dto.js';
+import { RefreshDto } from './dto/refresh.dto.js';
 
 @Injectable()
 export class AuthService {
@@ -91,8 +95,55 @@ export class AuthService {
   async getProfile(userId: string): Promise<SafeUser> {
     const user = await this.userService.findUserById(userId);
     if (!user) {
-      throw new UnauthorizedException('User no longer exits');
+      throw new UnauthorizedException('User no longer exists');
     }
     return user;
+  }
+
+  // Ends one session. Quiet on purpose: unknown or already-revoked tokens are not an error.
+  async logout(dto: RefreshDto): Promise<void> {
+    const stored = await this.refreshTokens.findByToken(dto.refreshToken);
+    if (stored && !stored.revokedAt) {
+      await this.refreshTokens.revoke(stored.id);
+    }
+  }
+
+  // Ends every session of the user (all devices).
+  async logoutAll(userId: string): Promise<void> {
+    await this.refreshTokens.revokeAllForUser(userId);
+  }
+
+  async refresh(refreshDto: RefreshDto): Promise<AuthResult> {
+    const invalid = () => new UnauthorizedException('Invalid refresh token');
+
+    // 1. Signature, algorithm and expiry (refresh secret only).
+    const payload = await this.tokenService
+      .verifyRefreshToken(refreshDto.refreshToken)
+      .catch(() => {
+        throw invalid();
+      });
+
+    // 2. The token must be one we actually issued.
+    const stored = await this.refreshTokens.findByToken(
+      refreshDto.refreshToken,
+    );
+
+    if (!stored || stored.id !== payload.jti || stored.userId !== payload.sub) {
+      throw invalid();
+    }
+
+    // 3. Already used before: someone else holds a copy. End every session.
+    if (stored.revokedAt) {
+      await this.refreshTokens.revokeAllForUser(stored.userId);
+
+      throw invalid();
+    }
+
+    const user = await this.userService.findUserById(stored.userId);
+    if (!user) {
+      throw invalid();
+    }
+
+    return this.issueTokens(user);
   }
 }
